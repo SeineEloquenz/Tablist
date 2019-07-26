@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 public class playerJoin implements Listener {
     public tablist plugin;
@@ -17,7 +18,7 @@ public class playerJoin implements Listener {
     }
 
     @EventHandler
-    public void onJoin() {
+    public void onJoin(PlayerJoinEvent event) {
         int num = vars.auto_messagenumber;
 
         Player op;
