@@ -32,20 +32,19 @@ public class theTablist {
             Object ppoplhf;
             Field f;
             Object pcon;
-            if (getServerVersion().equalsIgnoreCase("v1_13_R2")) {
-                header = getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', msg));
-                footer = getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', msg2));
-                ppoplhf = getNmsClass("PacketPlayOutPlayerListHeaderFooter").getConstructor().newInstance();
-                f = ppoplhf.getClass().getDeclaredField("header");
-                f.setAccessible(true);
-                f.set(ppoplhf, header);
-                Field fb = ppoplhf.getClass().getDeclaredField("footer");
-                fb.setAccessible(true);
-                fb.set(ppoplhf, footer);
-                pcon = p.getClass().getMethod("getHandle").invoke(p);
-                pcon = pcon.getClass().getField("playerConnection").get(pcon);
-                pcon.getClass().getMethod("sendPacket", getNmsClass("Packet")).invoke(pcon, ppoplhf);
-            }
+            //if (getServerVersion().equalsIgnoreCase("v1_13_R2"));
+            header = getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', msg));
+            footer = getNmsClass("ChatComponentText").getConstructor(String.class).newInstance(ChatColor.translateAlternateColorCodes('&', msg2));
+            ppoplhf = getNmsClass("PacketPlayOutPlayerListHeaderFooter").getConstructor().newInstance();
+            f = ppoplhf.getClass().getDeclaredField("header");
+            f.setAccessible(true);
+            f.set(ppoplhf, header);
+            Field fb = ppoplhf.getClass().getDeclaredField("footer");
+            fb.setAccessible(true);
+            fb.set(ppoplhf, footer);
+            pcon = p.getClass().getMethod("getHandle").invoke(p);
+            pcon = pcon.getClass().getField("playerConnection").get(pcon);
+            pcon.getClass().getMethod("sendPacket", getNmsClass("Packet")).invoke(pcon, ppoplhf);
         } catch (IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException | InstantiationException | NoSuchFieldException | IllegalAccessException var12) {
             var12.printStackTrace();
         }
