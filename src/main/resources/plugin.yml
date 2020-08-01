@@ -1,5 +1,6 @@
 name: Tablist
-version: "1.4.1"
+api-version: '1.15'
+version: "1.5.1"
 autor: Seine_Eloquenz
 main: de.seine_eloquenz.tablist.tablist
 commands:
