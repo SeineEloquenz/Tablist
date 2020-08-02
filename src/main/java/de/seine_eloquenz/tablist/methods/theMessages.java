@@ -6,9 +6,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.Objects;
+
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
 public class theMessages {
@@ -156,7 +159,37 @@ public class theMessages {
         int minutes = calender.get(Calendar.MINUTE);
         int seconds = calender.get(Calendar.SECOND);
         String time = setupInt(hours) + ":" + setupInt(minutes) + ":" + setupInt(seconds);
-        String old = ChatColor.translateAlternateColorCodes('&', s).replace("%player%", p.getName()).replace("%level%", String.valueOf(p.getLevel())).replace("%health%", String.valueOf(Math.round(p.getHealth()))).replace("%foodlevel%", String.valueOf(Math.round(Double.parseDouble(String.valueOf(p.getFoodLevel()))))).replace("%maxhealth%", String.valueOf(Math.round(p.getMaxHealth()))).replace("%iteminhandtype%", p.getItemInHand().getType().name()).replace("%iteminhandamount%", String.valueOf(p.getItemInHand().getAmount())).replace("%iteminhandid%", String.valueOf(p.getInventory().getItemInMainHand().getType().getId())).replace("%gamemode%", p.getGameMode().name()).replace("%ping%", String.valueOf(ping)).replace("%difficulty%", "" + p.getWorld().getDifficulty()).replace("%world%", p.getWorld().getName()).replace("%blockx%", df.format(p.getLocation().getX())).replace("%blocky%", df.format(p.getLocation().getY())).replace("%blockz%", df.format(p.getLocation().getZ())).replace("%direction%", getDirection(p.getLocation().getYaw(), 1)).replace("%directionNumber%", getDirection(p.getLocation().getYaw(), 3)).replace("%directionLetter%", getDirection(p.getLocation().getYaw(), 2)).replace("%onlineplayers%", onlinePlayersText).replace("%vanishedplayers%", String.valueOf(vanishedplayers)).replace("%maxonlineplayers%", String.valueOf(Bukkit.getServer().getMaxPlayers())).replace("%servermotd%", Bukkit.getServer().getMotd()).replace("%servername%", Bukkit.getServer().getName()).replace("%serverid%", Bukkit.getServer().getIp()).replace("%serverip%", Bukkit.getServer().getIp()).replace("%serverport%", String.valueOf(Bukkit.getServer().getPort())).replace("%staffs%", String.valueOf(staffs)).replace("%tps%", df.format((long)getTPS())).replace("%time%", time).replace("%date%", date);
+        String old = ChatColor.translateAlternateColorCodes('&', s)
+                .replace("%player%", p.getName())
+                .replace("%level%", String.valueOf(p.getLevel()))
+                .replace("%health%", String.valueOf(Math.round(p.getHealth())))
+                .replace("%foodlevel%", String.valueOf(Math.round(Double.parseDouble(String.valueOf(p.getFoodLevel())))))
+                .replace("%maxhealth%", String.valueOf(p.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null ? Math.round(Objects.requireNonNull(p.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue()) : 0))
+                .replace("%iteminhandtype%", p.getInventory().getItemInMainHand().getType().name())
+                .replace("%iteminhandamount%", String.valueOf(p.getInventory().getItemInMainHand().getAmount()))
+                .replace("%iteminhandid%", String.valueOf(p.getInventory().getItemInMainHand().getType()))
+                .replace("%gamemode%", p.getGameMode().name())
+                .replace("%ping%", String.valueOf(ping))
+                .replace("%difficulty%", "" + p.getWorld().getDifficulty())
+                .replace("%world%", p.getWorld().getName())
+                .replace("%blockx%", df.format(p.getLocation().getX()))
+                .replace("%blocky%", df.format(p.getLocation().getY()))
+                .replace("%blockz%", df.format(p.getLocation().getZ()))
+                .replace("%direction%", getDirection(p.getLocation().getYaw(), 1))
+                .replace("%directionNumber%", getDirection(p.getLocation().getYaw(), 3))
+                .replace("%directionLetter%", getDirection(p.getLocation().getYaw(), 2))
+                .replace("%onlineplayers%", onlinePlayersText)
+                .replace("%vanishedplayers%", String.valueOf(vanishedplayers))
+                .replace("%maxonlineplayers%", String.valueOf(Bukkit.getServer().getMaxPlayers()))
+                .replace("%servermotd%", Bukkit.getServer().getMotd())
+                .replace("%servername%", Bukkit.getServer().getName())
+                .replace("%serverid%", Bukkit.getServer().getIp())
+                .replace("%serverip%", Bukkit.getServer().getIp())
+                .replace("%serverport%", String.valueOf(Bukkit.getServer().getPort()))
+                .replace("%staffs%", String.valueOf(staffs))
+                .replace("%tps%", df.format(getTPS()))
+                .replace("%time%", time)
+                .replace("%date%", date);
         old = ChatColor.translateAlternateColorCodes('&', old);
         String prefix;
         if (old.contains("%money%")) {
