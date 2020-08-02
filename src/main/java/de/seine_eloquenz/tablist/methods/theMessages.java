@@ -194,7 +194,7 @@ public class theMessages {
         String prefix;
         if (old.contains("%money%")) {
             if (tablist.economy != null) {
-                prefix = df.format(tablist.economy.getBalance(p.getName()));
+                prefix = df.format(tablist.economy.getBalance(p));
                 old = old.replace("%money%", prefix);
             } else {
                 System.out.println(tablist.getPlugin().getDescription().getName() + "> " + vars.message_vaulterror + "Economy");
