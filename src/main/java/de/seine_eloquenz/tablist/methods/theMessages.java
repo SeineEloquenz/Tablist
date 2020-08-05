@@ -5,8 +5,11 @@ import de.seine_eloquenz.tablist.vars;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -16,6 +19,80 @@ import org.bukkit.entity.Player;
 
 public class theMessages {
     public tablist plugin;
+
+    private static final DecimalFormat df = new DecimalFormat("#.##");
+    
+    private static final Map<String, Function<MessageData, String>> replacements = new HashMap<>();
+    static {
+        replacements.put("%player%", d -> d.player.getName());
+        replacements.put("%level%", d -> String.valueOf(d.player.getLevel()));
+        replacements.put("%health%", d -> String.valueOf(Math.round(d.player.getHealth())));
+        replacements.put("%foodlevel%", d -> String.valueOf(Math.round(Double.parseDouble(String.valueOf(d.player.getFoodLevel())))));
+        replacements.put("%maxhealth%", d -> String.valueOf(d.player.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null ? Math.round(Objects.requireNonNull(d.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue()) : 0));
+        replacements.put("%iteminhandtype%", d -> d.player.getInventory().getItemInMainHand().getType().name());
+        replacements.put("%iteminhandamount%", d -> String.valueOf(d.player.getInventory().getItemInMainHand().getAmount()));
+        replacements.put("%iteminhandid%", d -> String.valueOf(d.player.getInventory().getItemInMainHand().getType()));
+        replacements.put("%gamemode%", d -> d.player.getGameMode().name());
+        replacements.put("%ping%", d -> String.valueOf(d.ping));
+        replacements.put("%difficulty%", d -> "" + d.player.getWorld().getDifficulty());
+        replacements.put("%world%", d -> d.player.getWorld().getName());
+        replacements.put("%blockx%", d -> df.format(d.player.getLocation().getX()));
+        replacements.put("%blocky%", d -> df.format(d.player.getLocation().getY()));
+        replacements.put("%blockz%", d -> df.format(d.player.getLocation().getZ()));
+        replacements.put("%direction%", d -> getDirection(d.player.getLocation().getYaw(), 1));
+        replacements.put("%directionNumber%", d -> getDirection(d.player.getLocation().getYaw(), 3));
+        replacements.put("%directionLetter%", d -> getDirection(d.player.getLocation().getYaw(), 2));
+        replacements.put("%onlineplayers%", d -> {
+            if (theConfig.getShowVanishedPlayerOnVariableChangeText()) {
+                String text;
+                if (d.player.hasPermission(theConfig.getStaffPermission(tablist.getPlugin()))) {
+                    text = theConfig.getShowVanishedPlayerOnVariableChangeTextStaff();
+                } else {
+                    text = theConfig.getShowVanishedPlayerOnVariableChangeTextUser();
+                }
+                return ChatColor.translateAlternateColorCodes('&', text);
+            } else {
+                return replacements.get("%online%").apply(d);
+            }
+        });
+        replacements.put("%vanishedplayers%", d -> String.valueOf(d.vanishedplayers));
+        replacements.put("%maxonlineplayers%", d -> String.valueOf(Bukkit.getServer().getMaxPlayers()));
+        replacements.put("%servermotd%", d -> Bukkit.getServer().getMotd());
+        replacements.put("%servername%", d -> Bukkit.getServer().getName());
+        replacements.put("%serverid%", d -> Bukkit.getServer().getIp());
+        replacements.put("%serverip%", d -> Bukkit.getServer().getIp());
+        replacements.put("%serverport%", d -> String.valueOf(Bukkit.getServer().getPort()));
+        replacements.put("%staffs%", d -> String.valueOf(d.staffs));
+        replacements.put("%tps%", d -> df.format(getTPS()));
+        replacements.put("%time%", d -> d.time);
+        replacements.put("%date%", d -> d.date);
+        replacements.put("%online%", d -> String.valueOf(d.onlineplayers));
+        replacements.put("%vanished%", d -> String.valueOf(d.vanishedplayers));
+    }
+
+    /**
+     * Messy way to encode the data used to remove a whopping lot of replace iterations
+     */
+    private static final class MessageData {
+        private final Player player;
+        private final int ping;
+        private final int vanishedplayers;
+        private final int onlineplayers;
+        private final int staffs;
+        private final String time;
+        private final String date;
+
+        private MessageData(final Player player, final int ping, final int vanishedPlayers, final int onlinePlayers,
+                            final int staffs, final String time, final String date) {
+            this.player = player;
+            this.ping = ping;
+            this.vanishedplayers = vanishedPlayers;
+            this.onlineplayers = onlinePlayers;
+            this.staffs = staffs;
+            this.time = time;
+            this.date = date;
+        }
+    }
 
     public theMessages(tablist plugin) {
         this.plugin = plugin;
@@ -34,7 +111,7 @@ public class theMessages {
         String outputMode1 = "";
         String outputMode2 = "";
         String outputMode3 = "";
-        double dir = (double)((yaw - 90.0F) % 360.0F);
+        double dir = (yaw - 90.0F) % 360.0F;
         if (dir < 0.0D) {
             dir += 360.0D;
         }
@@ -95,8 +172,8 @@ public class theMessages {
             return 0;
         } else {
             Byte i;
-            for(Iterator var2 = vars.tpsByteList.iterator(); var2.hasNext(); sum += i) {
-                i = (Byte)var2.next();
+            for(Iterator<Byte> var2 = vars.tpsByteList.iterator(); var2.hasNext(); sum += i) {
+                i = var2.next();
             }
 
             return (byte)(sum / vars.tpsByteList.size());
@@ -107,13 +184,11 @@ public class theMessages {
         int staffs = 0;
         int onlineplayers = 0;
         int vanishedplayers = 0;
-        String onlinePlayersText;
-        DecimalFormat df = new DecimalFormat("#.##");
-        Iterator var9 = Bukkit.getOnlinePlayers().iterator();
+        Iterator<? extends Player> var9 = Bukkit.getOnlinePlayers().iterator();
 
         Player op;
         while(var9.hasNext()) {
-            op = (Player)var9.next();
+            op = var9.next();
             if (op.hasPermission(theConfig.getStaffPermission(tablist.getPlugin()))) {
                 if (theConfig.getShowVanishedPlayerOnVariable()) {
                     ++staffs;
@@ -131,17 +206,6 @@ public class theMessages {
             }
         }
 
-        if (theConfig.getShowVanishedPlayerOnVariableChangeText()) {
-            if (p.hasPermission(theConfig.getStaffPermission(tablist.getPlugin()))) {
-                onlinePlayersText = theConfig.getShowVanishedPlayerOnVariableChangeTextStaff();
-            } else {
-                onlinePlayersText = theConfig.getShowVanishedPlayerOnVariableChangeTextUser();
-            }
-        } else {
-            onlinePlayersText = "%online%";
-        }
-
-        onlinePlayersText = ChatColor.translateAlternateColorCodes('&', onlinePlayersText).replace("%online%", String.valueOf(onlineplayers)).replace("%vanished%", String.valueOf(vanishedplayers));
         int ping = 0;
 
         try {
@@ -159,38 +223,28 @@ public class theMessages {
         int minutes = calender.get(Calendar.MINUTE);
         int seconds = calender.get(Calendar.SECOND);
         String time = setupInt(hours) + ":" + setupInt(minutes) + ":" + setupInt(seconds);
-        String old = ChatColor.translateAlternateColorCodes('&', s)
-                .replace("%player%", p.getName())
-                .replace("%level%", String.valueOf(p.getLevel()))
-                .replace("%health%", String.valueOf(Math.round(p.getHealth())))
-                .replace("%foodlevel%", String.valueOf(Math.round(Double.parseDouble(String.valueOf(p.getFoodLevel())))))
-                .replace("%maxhealth%", String.valueOf(p.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null ? Math.round(Objects.requireNonNull(p.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue()) : 0))
-                .replace("%iteminhandtype%", p.getInventory().getItemInMainHand().getType().name())
-                .replace("%iteminhandamount%", String.valueOf(p.getInventory().getItemInMainHand().getAmount()))
-                .replace("%iteminhandid%", String.valueOf(p.getInventory().getItemInMainHand().getType()))
-                .replace("%gamemode%", p.getGameMode().name())
-                .replace("%ping%", String.valueOf(ping))
-                .replace("%difficulty%", "" + p.getWorld().getDifficulty())
-                .replace("%world%", p.getWorld().getName())
-                .replace("%blockx%", df.format(p.getLocation().getX()))
-                .replace("%blocky%", df.format(p.getLocation().getY()))
-                .replace("%blockz%", df.format(p.getLocation().getZ()))
-                .replace("%direction%", getDirection(p.getLocation().getYaw(), 1))
-                .replace("%directionNumber%", getDirection(p.getLocation().getYaw(), 3))
-                .replace("%directionLetter%", getDirection(p.getLocation().getYaw(), 2))
-                .replace("%onlineplayers%", onlinePlayersText)
-                .replace("%vanishedplayers%", String.valueOf(vanishedplayers))
-                .replace("%maxonlineplayers%", String.valueOf(Bukkit.getServer().getMaxPlayers()))
-                .replace("%servermotd%", Bukkit.getServer().getMotd())
-                .replace("%servername%", Bukkit.getServer().getName())
-                .replace("%serverid%", Bukkit.getServer().getIp())
-                .replace("%serverip%", Bukkit.getServer().getIp())
-                .replace("%serverport%", String.valueOf(Bukkit.getServer().getPort()))
-                .replace("%staffs%", String.valueOf(staffs))
-                .replace("%tps%", df.format(getTPS()))
-                .replace("%time%", time)
-                .replace("%date%", date);
-        old = ChatColor.translateAlternateColorCodes('&', old);
+        String old = ChatColor.translateAlternateColorCodes('&', s);
+        final MessageData data = new MessageData(p, ping, vanishedplayers, onlineplayers, staffs, time, date);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < old.length(); i++) {
+            if (old.charAt(i) == '%') {
+                for (int j = 1; i+j < old.length(); j++) {
+                    if (old.charAt(i+j) == '%') {
+                        String selected = old.substring(i, i+j+1);
+                        if (replacements.containsKey(selected)) {
+                            builder.append(replacements.get(selected).apply(data));
+                            i += j;
+                        } else {
+                            builder.append(old.charAt(i));
+                        }
+                        break;
+                    }
+                }
+            } else {
+                builder.append(old.charAt(i));
+            }
+        }
+        old = ChatColor.translateAlternateColorCodes('&', builder.toString());
         String prefix;
         if (old.contains("%money%")) {
             if (tablist.economy != null) {
